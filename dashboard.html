@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jay Maa Badhar | Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: #f5f3ef;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------- Navbar ---------- */
+    nav {
+      background: linear-gradient(90deg, #4a0c0c, #7b1f1f);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    nav h2 {
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    nav ul li a:hover {
+      color: #b8860b;
+    }
+
+    /* ---------- Main ---------- */
+    main {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .welcome {
+      background: #fff;
+      border-left: 6px solid #b8860b;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome h1 {
+      color: #7b1f1f;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ---------- Cards ---------- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+      text-align: center;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      color: #7b1f1f;
+      margin-bottom: 1rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* ---------- IN/OUT Buttons ---------- */
+    .attendance-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .status-in {
+      color: green;
+    }
+
+    .status-out {
+      color: red;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      background-color: #7b1f1f;
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 100px;
+    }
+
+    .btn:hover {
+      background-color: #b8860b;
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      background: #4a0c0c;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      nav ul {
+        gap: 1rem;
+      }
+      .buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h2>Jay Maa Badhar</h2>
+    <ul>
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="#">Profile</a></li>
+      <li><a href="index.html">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="welcome">
+      <h1>Welcome, Employee 👋</h1>
+      <p>Track your attention, performance, and attendance here.</p>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <h3>Attendance</h3>
+        <div class="attendance-status">
+          <p class="status-text" id="status">You are currently OUT</p>
+          <div class="buttons">
+            <button class="btn" id="inBtn"><a href="photoexcell.html">IN</a></button>
+            <button class="btn" id="outBtn">OUT</button>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="card">
+        <h3>Attention Status</h3>
+        <p>Current focus: <strong>92%</strong> (Excellent)</p>
+      </div>
+
+      <div class="card">
+        <h3>Recent Activity</h3>
+        <p>Last login: <strong>Today, 09:45 AM</strong><br>Tasks completed: <strong>5</strong></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Jay Maa Badhar | Employee Attention Tracking Portal
+  </footer>
+
+  <script>
+    // Handle IN / OUT status
+    const statusText = document.getElementById("status");
+    const inBtn = document.getElementById("inBtn");
+    const outBtn = document.getElementById("outBtn");
+
+    inBtn.addEventListener("click", () => {
+      statusText.textContent = "You are currently IN";
+      statusText.classList.add("status-in");
+      statusText.classList.remove("status-out");
+    });
+
+    outBtn.addEventListener("click", () => {
+      statusText.textContent = "You are currently OUT";
+      statusText.classList.add("status-out");
+      statusText.classList.remove("status-in");
+    });
+  </script>
+</body>
+</html>
