@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jay Maa Badhar | Admin Dashboard</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f5f3ef;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background: linear-gradient(90deg, #4a0c0c, #7b1f1f);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    nav h2 {
+      font-size: 1.4rem;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #7b1f1f;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    button.export-btn {
+      background: #7b1f1f;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+
+    button.export-btn:hover {
+      background: #b8860b;
+    }
+
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      background: #7b1f1f;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    img {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 2px solid #b8860b;
+    }
+
+    footer {
+      background: #4a0c0c;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h2>Jay Maa Badhar</h2>
+    <ul>
+      <li><a href="photo.html">Employee Capture</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Admin Dashboard — Attendance Records</h1>
+    <div style="text-align:center;">
+      <button class="export-btn" onclick="exportToExcel()">Export to Excel</button>
+    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Photo</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceTable">
+        <tr><td colspan="3" style="text-align:center;">Loading records...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <footer>
+    © 2025 Jay Maa Badhar | Admin Panel
+  </footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+
+  <script>
+    // 🔐 Check admin authentication
+    if (localStorage.getItem("adminAuth") !== "true") {
+      window.location.href = "admin-login.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("adminAuth");
+      window.location.href = "admin-login.html";
+    }
+
+    // 🔑 Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const tableBody = document.getElementById("attendanceTable");
+
+    db.collection("attendance")
+      .orderBy("timestamp", "desc")
+      .onSnapshot(snapshot => {
+        tableBody.innerHTML = "";
+        if (snapshot.empty) {
+          tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No records found.</td></tr>`;
+        } else {
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${data.employeeName || "Unknown"}</td>
+              <td><img src="${data.photoURL}" alt="Photo"></td>
+              <td>${data.timestamp}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        }
+      });
+
+    function exportToExcel() {
+      const table = document.getElementById("dataTable").outerHTML;
+      const blob = new Blob([table], { type: "application/vnd.ms-excel" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "attendance_records.xls";
+      link.click();
+    }
+  </script>
+</body>
+</html>
