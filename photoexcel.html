@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>photoexcell.html</title>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f4f8;
+      margin-top: 30px;
+    }
+    video, canvas {
+      width: 320px;
+      height: 240px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: black;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #captureBtn { background-color: #007bff; color: white; }
+    #downloadBtn { background-color: #28a745; color: white; display: none; } /* hidden by default */
+    #adminLoginBtn { background-color: #ff9900; color: white; }
+    #captureBtn:hover { background-color: #0056b3; }
+    #downloadBtn:hover { background-color: #1e7e34; }
+    #adminLoginBtn:hover { background-color: #cc7a00; }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Employee Photo Attendance</h2>
+
+  <video id="video" autoplay></video><br>
+
+  <button id="captureBtn">📸 Capture Photo</button>
+  <button id="adminLoginBtn">🔐 Admin Login</button>
+  <button id="downloadBtn">⬇️ Download Excel</button>
+
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <h3>Captured Records</h3>
+  <table id="recordsTable">
+    <thead>
+      <tr><th>Name</th><th>Status</th><th>Timestamp</th><th>Preview</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const tableBody = document.querySelector('#recordsTable tbody');
+
+    const entries = [];
+    const ADMIN_PASSWORD = "admin123"; // 🔒 You can change this password
+
+    // Start camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => alert('Camera access denied: ' + err));
+
+    // Employee Capture
+    captureBtn.addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const photo = canvas.toDataURL('image/png');
+      const name = prompt("Enter Employee Name:");
+      if (!name) return;
+      const status = prompt("Enter Status (IN/OUT):", "IN");
+      const timestamp = new Date().toLocaleString();
+
+      entries.push({ name, status, timestamp, photo });
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${status}</td>
+        <td>${timestamp}</td>
+        <td><img src="${photo}" width="80"></td>
+      `;
+      tableBody.appendChild(row);
+
+      // Auto-download photo
+      const photoBlob = dataURLtoBlob(photo);
+      const safeName = name.replace(/\s+/g, '_');
+      const fileName = `EmployeePhotos_${safeName}_${status}_${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+      saveAs(photoBlob, fileName);
+    });
+
+    // Admin login
+    adminLoginBtn.addEventListener('click', () => {
+      const password = prompt("Enter admin password:");
+      if (password === ADMIN_PASSWORD) {
+        alert("✅ Admin access granted!");
+        downloadBtn.style.display = "inline-block"; // show the button
+        adminLoginBtn.style.display = "none"; // hide login button
+      } else {
+        alert("❌ Incorrect password.");
+      }
+    });
+
+    // Download Excel (admin only)
+    downloadBtn.addEventListener('click', async () => {
+      if (entries.length === 0) {
+        alert("No records captured yet!");
+        return;
+      }
+
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Attendance');
+
+      sheet.columns = [
+        { header: 'Employee Name', key: 'name', width: 25 },
+        { header: 'Status', key: 'status', width: 10 },
+        { header: 'Timestamp', key: 'timestamp', width: 25 }
+      ];
+
+      entries.forEach((entry, index) => {
+        sheet.addRow({
+          name: entry.name,
+          status: entry.status,
+          timestamp: entry.timestamp
+        });
+
+        const img = workbook.addImage({
+          base64: entry.photo,
+          extension: 'png'
+        });
+        sheet.addImage(img, {
+          tl: { col: 3.5, row: index + 1 },
+          ext: { width: 100, height: 75 }
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), `photoexcell_${Date.now()}.xlsx`);
+    });
+
+    function dataURLtoBlob(dataurl) {
+      const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while (n--) u8arr[n] = bstr.charCodeAt(n);
+      return new Blob([u8arr], { type: mime });
+    }
+  </script>
+</body>
+</html>
